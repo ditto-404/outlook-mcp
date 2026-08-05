@@ -19,6 +19,8 @@ export const MailSummarySchema = z.object({
   ccNames: z.array(z.string()).default([]),
   ccEmails: z.array(z.string()).default([]),
   folderPath: z.string().default(''),
+  // 'mail' = 일반 메일(olMail), 'calendar' = 회의 요청/응답, 연차 등 캘린더성 항목
+  itemType: z.enum(['mail', 'calendar']).default('mail'),
 });
 export type MailSummary = z.infer<typeof MailSummarySchema>;
 

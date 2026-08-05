@@ -32,7 +32,7 @@ function Search-FolderTree {
 
     foreach ($item in $items) {
         if ($Results.Count -ge $MaxCount -or $ScanCount.Value -ge $MaxScan) { break }
-        if ($item.Class -ne $script:olMail) { continue }
+        if (-not (Get-ItemType ([int]$item.Class))) { continue }
         $ScanCount.Value = $ScanCount.Value + 1
 
         if ($null -ne $Filters.dateFromDate -and $item.ReceivedTime -lt $Filters.dateFromDate) { continue }

@@ -7,12 +7,14 @@ export interface ClassifiableMail {
   senderEmail: string;
   ccNames: string[];
   ccEmails: string[];
+  /** 'calendar' 이면 회의 요청/응답, 연차 등 - 내용 판별 없이 항상 calendar_folder 로 이동 */
+  itemType?: 'mail' | 'calendar';
 }
 
 export interface ClassificationResult {
   /** 받은 편지함 기준 상대 폴더 경로 ("/" 구분) */
   folderPath: string;
-  matchedType: 'customer' | 'category' | 'default';
+  matchedType: 'customer' | 'category' | 'calendar' | 'default';
   matchedName: string;
   reason: string;
 }
@@ -36,6 +38,15 @@ export function classifyMail(
   customersConfig: CustomersConfig,
   categoriesConfig: CategoriesConfig,
 ): ClassificationResult {
+  if (mail.itemType === 'calendar') {
+    return {
+      folderPath: categoriesConfig.calendar_folder,
+      matchedType: 'calendar',
+      matchedName: categoriesConfig.calendar_folder,
+      reason: '회의 요청/응답, 연차 등 캘린더성 항목입니다.',
+    };
+  }
+
   const contentHaystack = [mail.subject, mail.bodyPreview, mail.senderName, mail.ccNames.join(' '), mail.ccEmails.join(' ')]
     .join('\n')
     .toLowerCase();

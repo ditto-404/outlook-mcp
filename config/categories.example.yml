@@ -71,3 +71,7 @@ default_folder: 미분류
 # 고객사로 분류된 메일이 모이는 상위 폴더 이름
 # 실제 이동 경로는 "{customer_root_folder}/{customers.yml 의 name}" 이 됩니다.
 customer_root_folder: 고객사
+
+# 회의 요청/응답, 연차 등 캘린더성 항목(일반 메일이 아닌 항목)이 이동할 폴더.
+# 이 항목들은 위 categories/customers 판별 없이 항상 이 폴더로 이동합니다.
+calendar_folder: 일정-캘린더알림
