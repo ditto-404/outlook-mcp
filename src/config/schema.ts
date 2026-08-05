@@ -23,5 +23,8 @@ export const CategoriesConfigSchema = z.object({
   categories: z.array(CategoryRuleSchema).default([]),
   default_folder: z.string().min(1).default('미분류'),
   customer_root_folder: z.string().min(1).default('고객사'),
+  // 회의 요청/응답, 연차 등 캘린더성 항목(올Mail 이 아닌 항목)이 이동할 폴더.
+  // 이 폴더로 가는 항목은 고객사/카테고리 키워드 판별을 거치지 않고 항상 여기로 간다.
+  calendar_folder: z.string().min(1).default('일정-캘린더알림'),
 });
 export type CategoriesConfig = z.infer<typeof CategoriesConfigSchema>;

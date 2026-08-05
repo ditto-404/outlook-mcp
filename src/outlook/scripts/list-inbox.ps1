@@ -29,7 +29,7 @@ try {
     $results = New-Object System.Collections.Generic.List[object]
     foreach ($item in $items) {
         if ($results.Count -ge $maxCount) { break }
-        if ($item.Class -ne $script:olMail) { continue }
+        if (-not (Get-ItemType ([int]$item.Class))) { continue }
         if ($scope -eq 'today' -and $item.ReceivedTime -lt $todayStart) {
             # 받은 시간 내림차순 정렬이므로 오늘보다 이전 메일이 나오면 더 볼 필요가 없습니다.
             break

@@ -14,6 +14,17 @@ $script:olTo = 1             # OlMailRecipientType.olTo
 $script:olCC = 2             # OlMailRecipientType.olCC
 $script:olMailItem = 0       # OlItemType.olMailItem
 
+# 회의 요청/응답, 작업 요청 등 "캘린더성" 항목 클래스 (연차 신청, 회의 초대 등이
+# 받은편지함에 이 클래스로 들어온다). organize_mail 은 이들을 calendar_folder 로 보낸다.
+$script:olMeetingClasses = @(53, 54, 55, 56, 57, 49, 50, 51, 52)  # Meeting*, TaskRequest*
+
+function Get-ItemType {
+    param([int]$Class)
+    if ($Class -eq $script:olMail) { return 'mail' }
+    if ($script:olMeetingClasses -contains $Class) { return 'calendar' }
+    return $null
+}
+
 # --- 요청/응답 JSON 처리 ------------------------------------------------------
 
 function Read-Request {
@@ -158,11 +169,13 @@ function Get-RecipientSmtp {
 function Get-RecipientsByType {
     param($Item, [int]$Type)
     $result = New-Object System.Collections.Generic.List[object]
-    foreach ($r in $Item.Recipients) {
-        if ($r.Type -eq $Type) {
-            $result.Add([ordered]@{ name = $r.Name; email = (Get-RecipientSmtp $r) }) | Out-Null
+    try {
+        foreach ($r in $Item.Recipients) {
+            if ($r.Type -eq $Type) {
+                $result.Add([ordered]@{ name = $r.Name; email = (Get-RecipientSmtp $r) }) | Out-Null
+            }
         }
-    }
+    } catch {}
     # 주의: PowerShell 은 함수가 반환하는 컬렉션의 원소가 0개/1개면 자동으로 배열을 풀어버린다
     # (2개 이상일 때만 배열로 유지됨). 단항 콤마 연산자로 강제로 배열 형태를 유지시킨다.
     return ,$result
@@ -189,20 +202,37 @@ function ConvertTo-MailSummary {
     $storeId = ''
     try { $storeId = $Item.Parent.StoreID } catch {}
 
+    $subject = ''
+    try { $subject = [string]$Item.Subject } catch {}
+
+    $senderName = ''
+    try { $senderName = [string]$Item.SenderName } catch {}
+
+    $receivedTime = ''
+    try { $receivedTime = $Item.ReceivedTime.ToString('o') } catch { $receivedTime = (Get-Date).ToString('o') }
+
+    $unread = $false
+    try { $unread = [bool]$Item.UnRead } catch {}
+
+    $hasAttachments = $false
+    try { $hasAttachments = ($Item.Attachments.Count -gt 0) } catch {}
+
     $cc = Get-CcInfo $Item
+    $itemType = Get-ItemType ([int]$Item.Class)
 
     return [ordered]@{
         entryId        = $Item.EntryID
         storeId        = $storeId
-        subject        = [string]$Item.Subject
-        senderName     = [string]$Item.SenderName
+        subject        = $subject
+        senderName     = $senderName
         senderEmail    = (Get-SenderSmtp $Item)
-        receivedTime   = $Item.ReceivedTime.ToString('o')
-        unread         = [bool]$Item.UnRead
-        hasAttachments = ($Item.Attachments.Count -gt 0)
+        receivedTime   = $receivedTime
+        unread         = $unread
+        hasAttachments = $hasAttachments
         bodyPreview    = $body
         ccNames        = $cc.Names
         ccEmails       = $cc.Emails
         folderPath     = $folderPath
+        itemType       = if ($itemType) { $itemType } else { 'mail' }
     }
 }
