@@ -53,22 +53,63 @@ Classic Outlook (실행 중인 인스턴스에 접속)
 
 ## 설치
 
+### 1. 사전 준비물 확인
+
+- Windows 10/11
+- Classic Outlook 데스크톱 앱이 설치되어 있고, 한 번 이상 실행해서 계정 설정을 마친 상태
+- [Node.js](https://nodejs.org) 18 이상 — PowerShell에서 `node --version` 으로 확인
+- Windows PowerShell 5.1 — Windows에 기본 내장되어 있어 별도 설치가 필요 없습니다
+
+### 2. 저장소 내려받기
+
 ```bash
-git clone <this-repo>
+git clone https://github.com/hayein-bit/outlook-mcp.git
 cd outlook-mcp
+```
+
+git이 없다면 저장소 페이지의 **Code → Download ZIP** 으로 받아 압축을 풀어도 됩니다.
+
+### 3. 설정 파일 준비
+
+`config/` 안의 실제 사용 파일(`customers.yml`, `categories.yml`, `reply_style.md`)은 `.gitignore`
+에 등록되어 있어 저장소에는 `*.example.*` 템플릿만 들어있습니다. PowerShell에서 아래처럼 복사해
+실제 파일을 만드세요:
+
+```powershell
+Copy-Item config\customers.example.yml config\customers.yml
+Copy-Item config\categories.example.yml config\categories.yml
+Copy-Item config\reply_style.example.md config\reply_style.md
+```
+
+(macOS/Linux 나 bash 라면 `cp config/customers.example.yml config/customers.yml` 형태로 바꿔 쓰세요.)
+
+방금 만든 3개 파일을 열어 자신의 조직(고객사 목록, 카테고리, 답장 문체)에 맞게 채워 넣으세요.
+당장 안 채워도 예시(판다/수달/여우) 그대로 빌드해서 동작 확인만 먼저 해도 됩니다.
+
+### 4. 의존성 설치 및 빌드
+
+```bash
 npm install
-
-# 실제 조직 정보가 들어갈 설정 파일을 템플릿에서 복사합니다.
-# (config/*.yml, config/reply_style.md 는 .gitignore 에 등록되어 있어 git에 올라가지 않습니다)
-cp config/customers.example.yml config/customers.yml
-cp config/categories.example.yml config/categories.yml
-cp config/reply_style.example.md config/reply_style.md
-
 npm run build
 ```
 
 `npm run build` 는 TypeScript 를 `dist/` 로 컴파일하고, `src/outlook/scripts/*.ps1` 을
-`dist/outlook/scripts/` 로 복사합니다.
+`dist/outlook/scripts/` 로 복사합니다. 아래와 비슷한 줄이 마지막에 출력되면 성공입니다:
+
+```
+PowerShell 스크립트 복사 완료: ...\src\outlook\scripts -> ...\dist\outlook\scripts (8개 파일)
+```
+
+### 5. 빌드 확인 (선택)
+
+Outlook을 실행해 둔 상태에서 서버 자체가 뜨는지만 빠르게 확인하려면:
+
+```bash
+npm start
+```
+
+`outlook-mcp 서버가 시작되었습니다 (stdio).` 로그가 뜨면 정상입니다(`Ctrl+C` 로 종료). 이 명령만으로는
+어떤 도구도 호출되지 않습니다 — 실제로 쓰려면 아래처럼 MCP 클라이언트에 연결해야 합니다.
 
 ## 설정 (config/)
 
@@ -142,44 +183,76 @@ customer_root_folder: 고객사
 기본적으로 서버를 실행한 디렉터리(`cwd`) 기준 `./config` 를 사용합니다. 다른 위치를 쓰려면
 `OUTLOOK_MCP_CONFIG_DIR` 환경변수를 지정하세요.
 
-## MCP 클라이언트에 등록하기
+## MCP 클라이언트에 연결하기
 
-Claude Desktop 설정 파일(`claude_desktop_config.json`) 예시:
+이 서버는 로컬 stdio 프로세스로 동작합니다. **Outlook이 설치된 이 PC에서 실행되는 MCP 클라이언트**
+에만 연결할 수 있고, 원격/클라우드 세션에서는 Outlook에 접근할 수 없어 동작하지 않습니다.
 
-```json
-{
-  "mcpServers": {
-    "outlook-mcp": {
-      "command": "node",
-      "args": ["C:/path/to/outlook-mcp/dist/server/index.js"],
-      "env": {
-        "OUTLOOK_MCP_CONFIG_DIR": "C:/path/to/outlook-mcp/config"
-      }
-    }
-  }
-}
-```
+아래 예시의 경로(`C:/outlook-mcp`)는 실제로 저장소를 내려받은 위치로 바꿔서 사용하세요. Windows
+경로의 백슬래시(`\`)는 JSON/커맨드라인 안에서 슬래시(`/`)로 쓰거나 이스케이프(`\\`)해야 합니다.
 
-경로의 백슬래시(`\`)는 슬래시(`/`)로 쓰거나 이스케이프(`\\`)해야 합니다.
+### Claude Desktop 에 연결하기
 
-Claude Code CLI 에서는 `claude mcp add` 로 등록할 수 있습니다 (한 번 등록해두면 그 뒤로는
-`--scope user` 기준 이 PC의 어느 디렉터리에서 세션을 열어도 도구가 보입니다):
+1. 설정 파일을 엽니다: `%APPDATA%\Claude\claude_desktop_config.json`
+   (탐색기 주소창에 `%APPDATA%\Claude` 를 붙여넣으면 폴더로 바로 이동합니다. 파일이 없으면 새로 만드세요.)
+2. `mcpServers` 항목에 아래 내용을 추가합니다 (파일이 비어있다면 통째로 붙여넣으면 됩니다):
+
+   ```json
+   {
+     "mcpServers": {
+       "outlook-mcp": {
+         "command": "node",
+         "args": ["C:/outlook-mcp/dist/server/index.js"],
+         "env": {
+           "OUTLOOK_MCP_CONFIG_DIR": "C:/outlook-mcp/config"
+         }
+       }
+     }
+   }
+   ```
+
+3. 파일을 저장한 뒤 **Claude Desktop을 완전히 종료했다가 다시 실행**합니다 (트레이 아이콘까지 종료해야
+   반영됩니다).
+4. 새 대화를 열고 도구(🔨) 아이콘을 눌러 `outlook-mcp` 가 목록에 보이면 연결된 것입니다.
+
+### Claude Code CLI 에 연결하기
+
+터미널에서 `claude mcp add` 명령으로 한 번만 등록하면 됩니다:
 
 ```bash
-claude mcp add outlook-mcp --scope user \
-  -e OUTLOOK_MCP_CONFIG_DIR="C:/path/to/outlook-mcp/config" \
-  -- node "C:/path/to/outlook-mcp/dist/server/index.js"
+claude mcp add outlook-mcp --scope user -e OUTLOOK_MCP_CONFIG_DIR="C:/outlook-mcp/config" -- node "C:/outlook-mcp/dist/server/index.js"
 ```
 
-정확한 플래그는 Claude Code 버전에 따라 다를 수 있으니 `claude mcp add --help` 로 확인하세요.
-Outlook COM 을 PowerShell 로 직접 호출하는 구조이므로, MCP 서버는 **Outlook 이 설치된 이 PC에서
-실행되는 세션**에서만 동작합니다 (원격/클라우드 세션에서는 Outlook 에 접근할 수 없습니다).
+옵션 설명:
+
+- `--scope user` — 이 PC의 이 계정이라면 **어느 디렉터리에서 세션을 열어도** 도구가 보입니다 (권장).
+- `--scope project` — `.mcp.json` 파일로 프로젝트 디렉터리에 저장되어, 그 프로젝트를 공유하는
+  다른 사람에게도 함께 적용됩니다 (팀에서 같이 쓸 때).
+- `-e KEY=VALUE` — 서버 프로세스에 넘길 환경변수. `OUTLOOK_MCP_CONFIG_DIR` 는 필수는 아니지만,
+  Claude Code 실행 디렉터리가 매번 달라질 수 있으므로 명시해 두는 것을 권장합니다.
+- `--` 뒤: 실제로 실행할 명령과 인자.
+
+등록 후 확인:
+
+```bash
+claude mcp list              # outlook-mcp 가 목록에 보이는지
+claude mcp get outlook-mcp   # 등록된 command/env 상세 확인
+```
+
+정확한 플래그/명령은 Claude Code 버전에 따라 달라질 수 있으니 `claude mcp add --help` 로 다시
+확인하세요. 등록 이후에는 아무 디렉터리에서나 새 세션을 열고 "메일 정리해줘" 처럼 자연어로
+요청하면 `organize_mail` 등의 도구가 자동으로 호출됩니다.
+
+### 연결이 잘 됐는지 확인하기
+
+가장 안전한 첫 호출은 `list_folders` 입니다 (아무것도 옮기지 않고 폴더 목록만 읽습니다). 대화에서
+"outlook-mcp로 폴더 목록 보여줘" 처럼 요청했을 때 실제 Outlook 폴더 구조가 나오면 정상 연결된 것입니다.
 
 ## 제공하는 Tool
 
 | Tool | 설명 |
 |---|---|
-| `organize_mail` | 받은 편지함을 검사하여 고객사/카테고리 폴더로 자동 이동. `scope`(all/unread/today), `dryRun` 지원 |
+| `organize_mail` | 받은/보낸 편지함(`rootFolder`)을 검사하여 고객사/카테고리 폴더로 자동 이동. 읽지 않은 메일은 이동하지 않고, 애매하게 판별된 메일은 옮기지 않고 "확인 필요" 목록으로만 보고합니다. `scope`(all/unread/today), `dryRun` 지원 |
 | `read_mail` | `entryId` 로 메일 한 건의 본문/제목/발신자/수신자/참조/날짜/첨부파일을 조회 |
 | `search_mail` | 제목/본문/발신자/날짜/고객사/키워드로 메일 검색 (하위 폴더 포함) |
 | `create_reply` | 원본 메일과 `reply_style.md` 를 함께 조회하여 AI 가 답장 본문을 작성할 수 있도록 준비 |
