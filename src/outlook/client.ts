@@ -19,6 +19,7 @@ import {
 
 export type OrganizeScope = 'all' | 'unread' | 'today';
 export type DraftMode = 'reply' | 'replyAll' | 'new';
+export type RootFolder = 'inbox' | 'sent';
 
 // 발신자 주소를 Exchange 디렉터리에서 조회하는 COM 호출(GetExchangeUser)이 건마다
 // 누적되면 수천 건 스캔 시 2분을 훌쩍 넘길 수 있어 넉넉히 잡는다.
@@ -29,6 +30,10 @@ export interface MoveBatchItem {
   entryId: string;
   storeId?: string;
   targetPath: string;
+}
+
+export interface MoveBatchOptions {
+  rootFolder?: RootFolder;
 }
 
 export interface SearchMailParams {
@@ -54,10 +59,10 @@ export interface SaveDraftParams {
 
 /** Classic Outlook COM 과의 상호작용을 감싸는 상위 레벨 클라이언트. */
 export class OutlookClient {
-  async listInboxMails(scope: OrganizeScope, maxCount = 200): Promise<MailSummary[]> {
+  async listInboxMails(scope: OrganizeScope, maxCount = 200, rootFolder: RootFolder = 'inbox'): Promise<MailSummary[]> {
     const data = await runOutlookScript<{ items: unknown[]; count: number }>(
       'list-inbox.ps1',
-      { scope, maxCount },
+      { scope, maxCount, rootFolder },
       LONG_TIMEOUT_MS,
     );
     return z.array(MailSummarySchema).parse(data.items);
@@ -79,8 +84,12 @@ export class OutlookClient {
   }
 
   /** move-mail.ps1 을 건마다 반복 호출하는 대신, 한 번의 Outlook 연결로 대량 이동한다. */
-  async moveMailBatch(moves: MoveBatchItem[]): Promise<MoveBatchResult> {
-    const data = await runOutlookScript('move-mail-batch.ps1', { moves }, BATCH_TIMEOUT_MS);
+  async moveMailBatch(moves: MoveBatchItem[], options: MoveBatchOptions = {}): Promise<MoveBatchResult> {
+    const data = await runOutlookScript(
+      'move-mail-batch.ps1',
+      { moves, rootFolder: options.rootFolder ?? 'inbox' },
+      BATCH_TIMEOUT_MS,
+    );
     return MoveBatchResultSchema.parse(data);
   }
 
