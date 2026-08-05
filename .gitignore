@@ -8,3 +8,9 @@ Thumbs.db
 .idea/
 .claude/
 *.tsbuildinfo
+
+# 실제 조직 정보(고객사명, 사내 도메인 등)가 들어가는 실사용 설정 파일.
+# 공개 저장소에는 config/*.example.* 템플릿만 올라간다.
+config/customers.yml
+config/categories.yml
+config/reply_style.md
