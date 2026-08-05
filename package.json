@@ -1,0 +1,46 @@
+{
+  "name": "outlook-mcp",
+  "version": "0.1.0",
+  "description": "Classic Outlook(COM)과 연동하는 MCP 서버 - 메일 자동 분류, 검색, 읽기, 답장 초안 작성",
+  "type": "module",
+  "main": "dist/server/index.js",
+  "bin": {
+    "outlook-mcp": "dist/server/index.js"
+  },
+  "files": [
+    "dist",
+    "config",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "start": "node dist/server/index.js",
+    "dev": "tsx src/server/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "win32"
+  ],
+  "keywords": [
+    "mcp",
+    "outlook",
+    "model-context-protocol",
+    "com",
+    "email"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
