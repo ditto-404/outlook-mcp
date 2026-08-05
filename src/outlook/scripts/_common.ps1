@@ -9,6 +9,7 @@ $ErrorActionPreference = 'Stop'
 # --- 상수 (Outlook Object Model) ---------------------------------------------
 $script:olFolderInbox = 6
 $script:olFolderDrafts = 16
+$script:olFolderSentMail = 5
 $script:olMail = 43          # OlObjectClass.olMail
 $script:olTo = 1             # OlMailRecipientType.olTo
 $script:olCC = 2             # OlMailRecipientType.olCC
@@ -86,6 +87,18 @@ function Get-InboxFolder {
 function Get-DraftsFolder {
     param($Ns)
     return $Ns.GetDefaultFolder($script:olFolderDrafts)
+}
+
+function Get-SentFolder {
+    param($Ns)
+    return $Ns.GetDefaultFolder($script:olFolderSentMail)
+}
+
+# organize_mail 등이 받은편지함/보낸편지함 중 어디를 기준으로 동작할지 선택할 때 사용.
+function Get-RootFolder {
+    param($Ns, [string]$RootFolderName)
+    if ($RootFolderName -eq 'sent') { return Get-SentFolder $Ns }
+    return Get-InboxFolder $Ns
 }
 
 function Get-ItemByIds {
