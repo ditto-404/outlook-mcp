@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # outlook-mcp 공통 PowerShell 헬퍼
 # 모든 스크립트가 ". "$PSScriptRoot\_common.ps1"" 형태로 dot-source 하여 사용합니다.
 # Windows PowerShell 5.1 (Classic Outlook COM) 기준으로 작성되었습니다.
@@ -163,7 +163,9 @@ function Get-RecipientsByType {
             $result.Add([ordered]@{ name = $r.Name; email = (Get-RecipientSmtp $r) }) | Out-Null
         }
     }
-    return $result
+    # 주의: PowerShell 은 함수가 반환하는 컬렉션의 원소가 0개/1개면 자동으로 배열을 풀어버린다
+    # (2개 이상일 때만 배열로 유지됨). 단항 콤마 연산자로 강제로 배열 형태를 유지시킨다.
+    return ,$result
 }
 
 function Get-CcInfo {
