@@ -5,12 +5,14 @@ import {
   FolderNodeSchema,
   MailDetailSchema,
   MailSummarySchema,
+  MoveBatchResultSchema,
   MoveResultSchema,
   SearchResultSchema,
   type DraftResult,
   type FolderNode,
   type MailDetail,
   type MailSummary,
+  type MoveBatchResult,
   type MoveResult,
   type SearchResult,
 } from './types.js';
@@ -18,7 +20,16 @@ import {
 export type OrganizeScope = 'all' | 'unread' | 'today';
 export type DraftMode = 'reply' | 'replyAll' | 'new';
 
-const LONG_TIMEOUT_MS = 120_000;
+// 발신자 주소를 Exchange 디렉터리에서 조회하는 COM 호출(GetExchangeUser)이 건마다
+// 누적되면 수천 건 스캔 시 2분을 훌쩍 넘길 수 있어 넉넉히 잡는다.
+const LONG_TIMEOUT_MS = 480_000;
+const BATCH_TIMEOUT_MS = 580_000;
+
+export interface MoveBatchItem {
+  entryId: string;
+  storeId?: string;
+  targetPath: string;
+}
 
 export interface SearchMailParams {
   folderPath?: string;
@@ -65,6 +76,12 @@ export class OutlookClient {
       createIfMissing: true,
     });
     return MoveResultSchema.parse(data);
+  }
+
+  /** move-mail.ps1 을 건마다 반복 호출하는 대신, 한 번의 Outlook 연결로 대량 이동한다. */
+  async moveMailBatch(moves: MoveBatchItem[]): Promise<MoveBatchResult> {
+    const data = await runOutlookScript('move-mail-batch.ps1', { moves }, BATCH_TIMEOUT_MS);
+    return MoveBatchResultSchema.parse(data);
   }
 
   async searchMail(params: SearchMailParams): Promise<SearchResult> {

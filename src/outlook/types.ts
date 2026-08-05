@@ -40,6 +40,24 @@ export const MoveResultSchema = z.object({
   newEntryId: z.string(),
   folderPath: z.string(),
 });
+
+export const MoveBatchResultSchema = z.object({
+  moved: z.array(
+    z.object({
+      entryId: z.string(),
+      targetPath: z.string(),
+      newEntryId: z.string(),
+    }),
+  ),
+  errors: z.array(
+    z.object({
+      entryId: z.string(),
+      targetPath: z.string(),
+      error: z.string(),
+    }),
+  ),
+});
+export type MoveBatchResult = z.infer<typeof MoveBatchResultSchema>;
 export type MoveResult = z.infer<typeof MoveResultSchema>;
 
 export const SearchResultSchema = z.object({
