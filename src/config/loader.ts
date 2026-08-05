@@ -31,13 +31,22 @@ export async function loadConfig(forceReload = false): Promise<AppConfig> {
 
   const [customersRaw, categoriesRaw, replyStyle] = await Promise.all([
     readFile(customersPath, 'utf8').catch((err: NodeJS.ErrnoException) => {
-      throw new Error(`고객사 설정 파일을 읽을 수 없습니다 (${customersPath}): ${err.message}`);
+      throw new Error(
+        `고객사 설정 파일을 읽을 수 없습니다 (${customersPath}): ${err.message}\n` +
+          `  -> config/customers.example.yml 을 config/customers.yml 로 복사한 뒤 실제 값으로 채우세요.`,
+      );
     }),
     readFile(categoriesPath, 'utf8').catch((err: NodeJS.ErrnoException) => {
-      throw new Error(`카테고리 설정 파일을 읽을 수 없습니다 (${categoriesPath}): ${err.message}`);
+      throw new Error(
+        `카테고리 설정 파일을 읽을 수 없습니다 (${categoriesPath}): ${err.message}\n` +
+          `  -> config/categories.example.yml 을 config/categories.yml 로 복사한 뒤 실제 값으로 채우세요.`,
+      );
     }),
     readFile(replyStylePath, 'utf8').catch(() => {
-      logger.warn(`reply_style.md 를 찾을 수 없습니다 (${replyStylePath}). 스타일 가이드 없이 답장을 준비합니다.`);
+      logger.warn(
+        `reply_style.md 를 찾을 수 없습니다 (${replyStylePath}). config/reply_style.example.md 를 복사하세요. ` +
+          '스타일 가이드 없이 답장을 준비합니다.',
+      );
       return '';
     }),
   ]);

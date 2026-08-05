@@ -1,3 +1,10 @@
+<!--
+  이 파일을 config/reply_style.md 로 복사한 뒤 자신의 실제 문체/서명으로 채우세요.
+  config/reply_style.md 는 .gitignore 에 등록되어 있어 실수로 커밋/공개되지 않습니다.
+
+    cp config/reply_style.example.md config/reply_style.md   (또는 그냥 복사)
+-->
+
 # 답장 스타일 가이드
 
 `create_reply` 도구는 이 문서 전체를 답장 초안 작성 시 항상 함께 읽어옵니다.

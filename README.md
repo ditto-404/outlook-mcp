@@ -57,6 +57,13 @@ Classic Outlook (실행 중인 인스턴스에 접속)
 git clone <this-repo>
 cd outlook-mcp
 npm install
+
+# 실제 조직 정보가 들어갈 설정 파일을 템플릿에서 복사합니다.
+# (config/*.yml, config/reply_style.md 는 .gitignore 에 등록되어 있어 git에 올라가지 않습니다)
+cp config/customers.example.yml config/customers.yml
+cp config/categories.example.yml config/categories.yml
+cp config/reply_style.example.md config/reply_style.md
+
 npm run build
 ```
 
@@ -65,11 +72,14 @@ npm run build
 
 ## 설정 (config/)
 
-| 파일 | 역할 |
-|---|---|
-| `config/customers.yml` | 고객사 목록과 별칭. 메일 제목/본문/참조에서 별칭을 검색해 고객사를 판별합니다. |
-| `config/categories.yml` | 고객사가 아닌 메일을 분류할 카테고리 규칙(키워드/발신자 도메인)과 이동할 폴더 경로. |
-| `config/reply_style.md` | 답장 작성 시 항상 참고하는 문체/톤 가이드. 자유 형식의 Markdown. |
+각 설정 파일은 `*.example.*` 템플릿(공개, git 추적)과 실제 사용 파일(비공개, git 무시)로
+나뉘어 있습니다. 실제 고객사명/사내 도메인 등이 담기는 쪽은 항상 `.example` 이 없는 파일입니다.
+
+| 템플릿 (git 추적) | 실사용 파일 (git 무시) | 역할 |
+|---|---|---|
+| `config/customers.example.yml` | `config/customers.yml` | 고객사 목록과 별칭. 메일 제목/본문/참조에서 별칭을 검색해 고객사를 판별합니다. |
+| `config/categories.example.yml` | `config/categories.yml` | 고객사가 아닌 메일을 분류할 카테고리 규칙(키워드/발신자 도메인)과 이동할 폴더 경로. |
+| `config/reply_style.example.md` | `config/reply_style.md` | 답장 작성 시 항상 참고하는 문체/톤 가이드. 자유 형식의 Markdown. |
 
 세 파일 모두 **코드를 건드리지 않고** 그대로 수정/추가/삭제하면 됩니다.
 
@@ -152,6 +162,19 @@ Claude Desktop 설정 파일(`claude_desktop_config.json`) 예시:
 
 경로의 백슬래시(`\`)는 슬래시(`/`)로 쓰거나 이스케이프(`\\`)해야 합니다.
 
+Claude Code CLI 에서는 `claude mcp add` 로 등록할 수 있습니다 (한 번 등록해두면 그 뒤로는
+`--scope user` 기준 이 PC의 어느 디렉터리에서 세션을 열어도 도구가 보입니다):
+
+```bash
+claude mcp add outlook-mcp --scope user \
+  -e OUTLOOK_MCP_CONFIG_DIR="C:/path/to/outlook-mcp/config" \
+  -- node "C:/path/to/outlook-mcp/dist/server/index.js"
+```
+
+정확한 플래그는 Claude Code 버전에 따라 다를 수 있으니 `claude mcp add --help` 로 확인하세요.
+Outlook COM 을 PowerShell 로 직접 호출하는 구조이므로, MCP 서버는 **Outlook 이 설치된 이 PC에서
+실행되는 세션**에서만 동작합니다 (원격/클라우드 세션에서는 Outlook 에 접근할 수 없습니다).
+
 ## 제공하는 Tool
 
 | Tool | 설명 |
@@ -221,6 +244,9 @@ npm start             # dist/server/index.js 실행
   파이프를 통해 바이트를 직접 읽으므로 영향을 받지 않습니다.
 - **다른 PowerShell(pwsh.exe)을 쓰고 싶다면**: `OUTLOOK_MCP_POWERSHELL_EXE` 환경변수로 실행 파일
   경로를 지정할 수 있습니다.
+- **폴더 이름에 "/" 가 포함된 경우**: `folderPath`/`folder` 값은 "/" 를 하위 폴더 구분자로
+  해석하므로, Outlook 폴더 이름 자체에 "/" 가 들어 있으면(예: `공지/알림`) 경로 해석이 꼬입니다.
+  이런 폴더는 이름에서 "/" 를 빼거나, 해당 폴더를 `folder`/`folderPath` 값으로 직접 참조하지 마세요.
 
 ## 라이선스
 
