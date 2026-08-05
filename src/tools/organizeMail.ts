@@ -23,18 +23,16 @@ export function registerOrganizeMailTool(server: McpServer): void {
           .boolean()
           .default(false)
           .describe('true 이면 실제로 이동하지 않고 이동 계획만 미리 보여줍니다.'),
-        maxCount: z.number().int().positive().max(1000).default(200).describe('검사할 최대 메일 수'),
+        maxCount: z.number().int().positive().max(5000).default(200).describe('검사할 최대 메일 수'),
       },
     },
     async ({ scope, dryRun, maxCount }) => {
       const { customers, categories } = await loadConfig();
       const mails = await outlookClient.listInboxMails(scope, maxCount);
 
-      const moved: Array<{ subject: string; from: string; folder: string; reason: string }> = [];
-      const errors: Array<{ subject: string; error: string }> = [];
-
-      for (const mail of mails) {
-        const classification = classifyMail(
+      const classified = mails.map((mail) => ({
+        mail,
+        classification: classifyMail(
           {
             subject: mail.subject,
             bodyPreview: mail.bodyPreview,
@@ -45,22 +43,47 @@ export function registerOrganizeMailTool(server: McpServer): void {
           },
           customers,
           categories,
-        );
+        ),
+      }));
 
-        try {
-          if (!dryRun) {
-            await outlookClient.moveMail(mail.entryId, mail.storeId, classification.folderPath);
-          }
+      const moved: Array<{ subject: string; from: string; folder: string; reason: string }> = [];
+      const errors: Array<{ subject: string; error: string }> = [];
+
+      if (dryRun) {
+        for (const { mail, classification } of classified) {
           moved.push({
             subject: mail.subject,
             from: mail.senderName,
             folder: classification.folderPath,
             reason: classification.reason,
           });
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          logger.error(`메일 이동 실패 ("${mail.subject}"): ${message}`);
-          errors.push({ subject: mail.subject, error: message });
+        }
+      } else {
+        // 건마다 PowerShell 프로세스를 새로 띄우면 대량 이동 시 매우 느려지므로,
+        // 한 번의 Outlook 연결로 일괄 이동한다.
+        const result = await outlookClient.moveMailBatch(
+          classified.map(({ mail, classification }) => ({
+            entryId: mail.entryId,
+            storeId: mail.storeId,
+            targetPath: classification.folderPath,
+          })),
+        );
+
+        const bySubject = new Map(classified.map(({ mail, classification }) => [mail.entryId, { mail, classification }]));
+        for (const m of result.moved) {
+          const info = bySubject.get(m.entryId);
+          moved.push({
+            subject: info?.mail.subject ?? m.entryId,
+            from: info?.mail.senderName ?? '',
+            folder: m.targetPath,
+            reason: info?.classification.reason ?? '',
+          });
+        }
+        for (const e of result.errors) {
+          const info = bySubject.get(e.entryId);
+          const subject = info?.mail.subject ?? e.entryId;
+          logger.error(`메일 이동 실패 ("${subject}"): ${e.error}`);
+          errors.push({ subject, error: e.error });
         }
       }
 
