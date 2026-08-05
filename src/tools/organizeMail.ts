@@ -16,12 +16,17 @@ export function registerOrganizeMailTool(server: McpServer): void {
         '분류 규칙은 config/customers.yml, config/categories.yml 을 따릅니다.\n' +
         '규칙: (1) 읽지 않은 메일은 절대 이동하지 않습니다 - 사용자가 아직 확인하지 않은 메일이기 때문입니다. ' +
         '(2) 고객사/카테고리 어디에도 확실히 일치하지 않는 애매한 메일은 임의로 미분류 폴더로 옮기지 않고, ' +
-        '"확인이 필요한 메일" 목록으로만 보고합니다 - 이 목록은 반드시 사용자에게 보여주고 어떻게 분류할지 물어보세요.',
+        '"확인이 필요한 메일" 목록으로만 보고합니다 - 이 목록은 반드시 사용자에게 보여주고 어떻게 분류할지 물어보세요. ' +
+        '(3) rootFolder 로 보낸편지함을 검사하더라도, 고객사/카테고리 폴더는 항상 받은편지함 쪽 폴더 트리 하나로 ' +
+        '모입니다 - 같은 고객사에게 받은 메일과 보낸 메일이 한 폴더에 함께 쌓입니다.',
       inputSchema: {
         rootFolder: z
           .enum(['inbox', 'sent'])
           .default('inbox')
-          .describe('정리할 대상. inbox=받은편지함, sent=보낸편지함 (동일한 제목/본문 기준 분류 규칙을 그대로 적용)'),
+          .describe(
+            '어디를 검사할지. inbox=받은편지함, sent=보낸편지함 (동일한 제목/본문 기준 분류 규칙을 그대로 적용). ' +
+              '검사 대상만 다를 뿐, 이동 대상 폴더는 항상 받은편지함 쪽 트리로 통일됩니다.',
+          ),
         scope: z
           .enum(['all', 'unread', 'today'])
           .default('all')
@@ -80,13 +85,16 @@ export function registerOrganizeMailTool(server: McpServer): void {
       } else if (confident.length > 0) {
         // 건마다 PowerShell 프로세스를 새로 띄우면 대량 이동 시 매우 느려지므로,
         // 한 번의 Outlook 연결로 일괄 이동한다.
+        // 주의: rootFolder 는 "어디를 스캔할지"만 결정한다. 고객사/카테고리 폴더는
+        // 보낸편지함을 정리할 때도 항상 받은편지함 쪽 트리 하나로 모은다 (받은/보낸 메일이
+        // 같은 고객사 폴더에 함께 쌓이도록) - 그래서 target 은 항상 'inbox' 로 고정한다.
         const result = await outlookClient.moveMailBatch(
           confident.map(({ mail, classification }) => ({
             entryId: mail.entryId,
             storeId: mail.storeId,
             targetPath: classification.folderPath,
           })),
-          { rootFolder },
+          { rootFolder: 'inbox' },
         );
 
         const byEntryId = new Map(confident.map(({ mail, classification }) => [mail.entryId, { mail, classification }]));
