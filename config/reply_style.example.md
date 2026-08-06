@@ -3,6 +3,11 @@
   config/reply_style.md 는 .gitignore 에 등록되어 있어 실수로 커밋/공개되지 않습니다.
 
     cp config/reply_style.example.md config/reply_style.md   (또는 그냥 복사)
+
+  손으로 채우는 대신, MCP 클라이언트에서 `learn_reply_style` 도구를 호출해서
+  ("내 보낸 메일 문체 학습해서 reply_style.md 만들어줘") AI 가 실제 보낸 메일
+  패턴을 분석해 초안을 작성하게 할 수도 있습니다. 이 도구는 보낸 편지함에서
+  실제 작성한 메일 본문을 가져오기만 하고, 분석/작성은 AI 가 수행합니다.
 -->
 
 # 답장 스타일 가이드
