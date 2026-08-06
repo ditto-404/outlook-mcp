@@ -16,6 +16,9 @@ export const CategoryRuleSchema = z.object({
   folder: z.string().min(1, 'categories.yml: folder 는 비어 있을 수 없습니다.'),
   keywords: z.array(z.string()).default([]),
   sender_domains: z.array(z.string()).default([]),
+  // true 이면 고객사 판별보다 먼저 검사한다. 사내 공지/행정 메일처럼, 본문에 고객사
+  // 이름이 우연히 언급되더라도 항상 이 카테고리로 보내야 하는 경우에 사용한다.
+  priority: z.boolean().default(false),
 });
 export type CategoryRule = z.infer<typeof CategoryRuleSchema>;
 

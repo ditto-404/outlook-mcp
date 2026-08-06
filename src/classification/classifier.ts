@@ -1,4 +1,4 @@
-import type { CategoriesConfig, CustomersConfig } from '../config/schema.js';
+import type { CategoriesConfig, CategoryRule, CustomersConfig } from '../config/schema.js';
 
 export interface ClassifiableMail {
   subject: string;
@@ -29,10 +29,41 @@ function normalizeDomain(domain: string): string {
   return domain.toLowerCase().replace(/^@/, '');
 }
 
+function matchCategory(
+  category: CategoryRule,
+  subjectBodyHaystack: string,
+  senderDomain: string,
+): ClassificationResult | null {
+  for (const keyword of category.keywords) {
+    if (subjectBodyHaystack.includes(keyword.toLowerCase())) {
+      return {
+        folderPath: category.folder,
+        matchedType: 'category',
+        matchedName: category.name,
+        reason: `키워드 "${keyword}" 이(가) 제목/본문/첨부파일명에서 발견되었습니다.`,
+      };
+    }
+  }
+  for (const domain of category.sender_domains) {
+    if (senderDomain && senderDomain === normalizeDomain(domain)) {
+      return {
+        folderPath: category.folder,
+        matchedType: 'category',
+        matchedName: category.name,
+        reason: `발신자 도메인 "${domain}" 이(가) 일치했습니다.`,
+      };
+    }
+  }
+  return null;
+}
+
 /**
- * 제목/본문/발신자/참조를 종합하여 메일이 어느 고객사 또는 카테고리 폴더로
- * 이동해야 하는지 판단합니다. 발신자의 이메일 도메인만으로 고객사를 판단하지
- * 않고, 메일 내용 전반에서 고객사 별칭을 찾습니다 (customers.yml 참고).
+ * 제목/본문/발신자/참조/첨부파일명을 종합하여 메일이 어느 고객사 또는 카테고리
+ * 폴더로 이동해야 하는지 판단합니다. 발신자의 이메일 도메인만으로 고객사를
+ * 판단하지 않고, 메일 내용 전반에서 고객사 별칭을 찾습니다 (customers.yml 참고).
+ *
+ * 판별 순서: 캘린더성 항목 -> priority 카테고리(사내 공지 등, 고객사 언급이 있어도
+ * 항상 우선) -> 고객사 -> 나머지 카테고리 -> 기본 폴더.
  */
 export function classifyMail(
   mail: ClassifiableMail,
@@ -49,6 +80,17 @@ export function classifyMail(
   }
 
   const attachmentNames = mail.attachmentNames ?? [];
+  const subjectBodyHaystack = `${mail.subject}\n${mail.bodyPreview}\n${attachmentNames.join(' ')}`.toLowerCase();
+  const senderDomain = domainOf(mail.senderEmail);
+
+  const priorityCategories = categoriesConfig.categories.filter((c) => c.priority);
+  const normalCategories = categoriesConfig.categories.filter((c) => !c.priority);
+
+  for (const category of priorityCategories) {
+    const result = matchCategory(category, subjectBodyHaystack, senderDomain);
+    if (result) return result;
+  }
+
   const contentHaystack = [
     mail.subject,
     mail.bodyPreview,
@@ -73,30 +115,9 @@ export function classifyMail(
     }
   }
 
-  const subjectBodyHaystack = `${mail.subject}\n${mail.bodyPreview}\n${attachmentNames.join(' ')}`.toLowerCase();
-  const senderDomain = domainOf(mail.senderEmail);
-
-  for (const category of categoriesConfig.categories) {
-    for (const keyword of category.keywords) {
-      if (subjectBodyHaystack.includes(keyword.toLowerCase())) {
-        return {
-          folderPath: category.folder,
-          matchedType: 'category',
-          matchedName: category.name,
-          reason: `키워드 "${keyword}" 이(가) 제목/본문/첨부파일명에서 발견되었습니다.`,
-        };
-      }
-    }
-    for (const domain of category.sender_domains) {
-      if (senderDomain && senderDomain === normalizeDomain(domain)) {
-        return {
-          folderPath: category.folder,
-          matchedType: 'category',
-          matchedName: category.name,
-          reason: `발신자 도메인 "${domain}" 이(가) 일치했습니다.`,
-        };
-      }
-    }
+  for (const category of normalCategories) {
+    const result = matchCategory(category, subjectBodyHaystack, senderDomain);
+    if (result) return result;
   }
 
   return {
