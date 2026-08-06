@@ -6,6 +6,7 @@
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)](#요구사항)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-8A2BE2)](https://modelcontextprotocol.io)
 [![GitHub Repo stars](https://img.shields.io/github/stars/hayein-bit/outlook-mcp?style=social)](https://github.com/hayein-bit/outlook-mcp)
+[![English](https://img.shields.io/badge/lang-English-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#english)
 
 Windows **Classic Outlook**(데스크톱 앱)과 연동되는 [MCP](https://modelcontextprotocol.io)(Model Context Protocol) 서버입니다.
 Microsoft Graph API 대신 **Outlook COM**(Object Model)을 직접 사용하므로, 별도의 Azure AD 앱 등록이나
@@ -224,20 +225,29 @@ calendar_folder: "6. 일정알림"
 
 ### Claude Code CLI에 연결하기
 
-터미널에서 `claude mcp add` 명령으로 한 번만 등록하면 됩니다:
+`claude mcp add`는 Claude Code 대화 안이 아니라 일반 터미널(PowerShell/cmd)에서 실행하는
+명령입니다. 아래처럼 한 번만 등록해 두면 됩니다.
 
 ```bash
-claude mcp add outlook-mcp --scope user -e OUTLOOK_MCP_CONFIG_DIR="C:/outlook-mcp/config" -- node "C:/outlook-mcp/dist/server/index.js"
+claude mcp add outlook-mcp --scope local -e OUTLOOK_MCP_CONFIG_DIR="C:/outlook-mcp/config" -- node "C:/outlook-mcp/dist/server/index.js"
 ```
 
-옵션 설명:
+scope 옵션:
 
-- `--scope user`: 이 PC의 동일 계정이면 **어느 디렉터리에서 세션을 열어도** 도구가 보입니다 (권장).
-- `--scope project`: `.mcp.json` 파일로 프로젝트 디렉터리에 저장되며, 해당 프로젝트를 공유하는
-  다른 사람에게도 함께 적용됩니다 (팀에서 함께 사용할 때).
-- `-e KEY=VALUE`: 서버 프로세스에 전달할 환경변수. `OUTLOOK_MCP_CONFIG_DIR`는 필수는 아니지만,
-  Claude Code 실행 디렉터리가 매번 달라질 수 있으므로 명시해 두기를 권장합니다.
-- `--` 뒤: 실제로 실행할 명령과 인자.
+- `--scope local` (기본값, 권장): 명령을 실행한 디렉터리에서만 도구가 보입니다. `outlook-mcp`
+  폴더 안에서 실행하면, 이후 그 폴더에서 여는 세션에만 적용됩니다.
+- `--scope user`: 이 PC의 동일 계정이면 어느 디렉터리에서 세션을 열어도 도구가 보입니다.
+- `--scope project`: 등록 정보가 프로젝트 폴더 안에 저장되어, 같은 프로젝트를 쓰는 다른
+  사람에게도 함께 적용됩니다. 팀에서 설정을 공유할 때만 사용을 권장합니다.
+
+기타 옵션:
+
+- `-e KEY=VALUE`: 서버 프로세스에 전달할 환경변수입니다. `OUTLOOK_MCP_CONFIG_DIR`는 필수는
+  아니지만, Claude Code 실행 디렉터리가 매번 달라질 수 있으므로 명시해 두기를 권장합니다.
+- `--` 뒤: 실제로 실행할 명령과 인자입니다.
+
+등록은 한 번만 하면 됩니다. 이후에는 등록해 둔 범위 안에서 평소처럼 `claude`로 새 세션을
+열기만 하면 도구가 자동으로 보입니다.
 
 등록 후 확인:
 
@@ -339,5 +349,377 @@ npm start             # dist/server/index.js 실행
   "/"를 빼거나, 해당 폴더를 `folder`/`folderPath` 값으로 직접 참조하지 않습니다.
 
 ## 라이선스
+
+[MIT](./LICENSE)
+
+---
+
+<a id="english"></a>
+
+## English
+
+[![한국어](https://img.shields.io/badge/lang-한국어-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#outlook-mcp)
+
+An [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server that integrates with
+Windows **Classic Outlook** (the desktop app). It uses **Outlook COM** (Object Model) directly
+instead of the Microsoft Graph API, so it works without registering an Azure AD app or any cloud
+authentication — it automates whatever Outlook is already installed locally.
+
+The goal is to automatically sort the inbox by customer/category, search and read mail, and
+prepare reply drafts in the user's own writing style inside Outlook's Drafts folder. **Mail is
+always reviewed and sent by the user directly** — this server never sends mail on its own.
+
+> To avoid being tied to any specific company, the customer list, categories, and reply style are
+> all defined by files under `config/`. Editing those files is enough to reuse this project in a
+> different organization, with no code changes required.
+
+### How it works
+
+Node.js cannot work with Windows COM objects directly, so this project delegates every
+interaction with Outlook to a **PowerShell child process**.
+
+```
+MCP Client (e.g. Claude)
+      │  stdio (JSON-RPC)
+      ▼
+outlook-mcp (Node.js / TypeScript)
+      │  request/response exchanged via temporary JSON files
+      ▼
+PowerShell (powershell.exe)
+      │  Outlook.Application COM object
+      ▼
+Classic Outlook (attaches to the running instance)
+```
+
+- If Outlook is already running, the server attaches to that instance (no new window or profile
+  prompt).
+- If it isn't running, the server starts it.
+- Request parameters and results are exchanged through **temporary JSON files** rather than
+  stdout, to avoid locale/encoding issues. A temporary folder is created per call and cleaned up
+  when the call finishes.
+
+### Requirements
+
+- Windows 10/11
+- Classic Outlook (desktop app; Microsoft 365 / Exchange / POP/IMAP accounts are all fine)
+  installed with a profile configured
+- Node.js 18 or later
+- Windows PowerShell 5.1 (built into Windows; no separate install needed)
+
+> New Outlook (the web-based rebuild) does not support the COM Object Model, so it cannot be
+> controlled by this project. Your account needs to be on Classic Outlook.
+
+### Installation
+
+#### 1. Prerequisites
+
+- Windows 10/11
+- Classic Outlook desktop app installed and run at least once, with the account already set up
+- [Node.js](https://nodejs.org) 18 or later (check with `node --version` in PowerShell)
+- Windows PowerShell 5.1 (built into Windows; no separate install needed)
+
+#### 2. Get the repository
+
+```bash
+git clone https://github.com/hayein-bit/outlook-mcp.git
+cd outlook-mcp
+```
+
+If you don't have git, you can also download it as a ZIP from the repository page (**Code →
+Download ZIP**) and extract it.
+
+#### 3. Prepare the config files
+
+Copy each `.example` file in the `config` folder to the same name without `.example`.
+
+In PowerShell:
+
+```powershell
+Copy-Item config\customers.example.yml config\customers.yml
+Copy-Item config\categories.example.yml config\categories.yml
+Copy-Item config\reply_style.example.md config\reply_style.md
+```
+
+(On macOS/Linux or bash, use `cp config/customers.example.yml config/customers.yml` instead.)
+Copying the files in File Explorer and removing `.example` from the name works the same way.
+
+Open the three new files and fill them in for your own organization (customer list, categories,
+reply style). You can also leave the example values as-is at first and just build to confirm
+everything works.
+
+#### 4. Install dependencies and build
+
+```bash
+npm install
+npm run build
+```
+
+`npm run build` compiles TypeScript into `dist/` and copies `src/outlook/scripts/*.ps1` into
+`dist/outlook/scripts/`. A successful build ends with a line similar to:
+
+```
+PowerShell script copy complete: ...\src\outlook\scripts -> ...\dist\outlook\scripts (8 files)
+```
+
+#### 5. Verify the build (optional)
+
+With Outlook running, to quickly check that the server itself starts correctly:
+
+```bash
+npm start
+```
+
+A `outlook-mcp server started (stdio).` log line means it's working (`Ctrl+C` to stop). This
+command alone doesn't invoke any tools — to actually use the server, connect it to an MCP client
+as described below.
+
+### Configuration (config/)
+
+Each config file is split into a `*.example.*` template (public, tracked by git) and the real
+file actually used (private, ignored by git). Anything containing real customer names or internal
+domains always lives in the file without `.example` in its name.
+
+| Template (tracked by git) | Real file (git-ignored) | Purpose |
+|---|---|---|
+| `config/customers.example.yml` | `config/customers.yml` | Customer list and aliases. Mail subject/body/CC are searched for these aliases to identify the customer. |
+| `config/categories.example.yml` | `config/categories.yml` | Category rules (keywords/sender domains) for mail that isn't matched to a customer, and the folder each one moves to. |
+| `config/reply_style.example.md` | `config/reply_style.md` | Tone/style guide always consulted when drafting a reply. Free-form Markdown. |
+
+All three files can be freely edited, added to, or removed **without touching any code**.
+
+#### customers.yml example
+
+```yaml
+customers:
+  - name: CustomerA       # destination folder name (Inbox > 2. Customers > CustomerA)
+    aliases:
+      - CustomerA
+      - Customer A Inc.
+
+  - name: CustomerB
+    aliases:
+      - CustomerB
+      - Customer B Inc.
+```
+
+> Customer detection is based on whether an alias appears in the subject, body, or CC — **not**
+> on the sender's email domain. Even if an internal colleague sends the mail on the customer's
+> behalf, it still moves to that customer's folder as long as "CustomerB" appears in the body.
+
+#### categories.yml example
+
+```yaml
+categories:
+  - name: Internal Notice
+    folder: "3. Internal Notices"
+    keywords: ["[Notice]", "[Announcement]", "company-wide notice", "HR notice"]
+    sender_domains: []
+
+default_folder: "7. Other"
+customer_root_folder: "2. Customers"
+calendar_folder: "6. Calendar & Meetings"
+```
+
+Rules are checked in order from top to bottom: customer detection first, then calendar-type items
+(`calendar_folder`), then the categories below.
+
+#### Default folder structure
+
+```
+Inbox
+├── 1. Reference Material
+├── 2. Customers
+│   ├── CustomerA
+│   ├── CustomerB
+│   └── CustomerC
+├── 3. Internal Notices
+├── 4. Newsletters
+├── 5. Work Discussion
+├── 6. Calendar & Meetings
+└── 7. Other
+```
+
+Folders that don't exist yet are created automatically when `organize_mail` runs. The numeric
+prefixes in the example are just that — an example. Drop them from the `folder` /
+`customer_root_folder` / `calendar_folder` / `default_folder` values if you don't want them.
+
+#### reply_style.md
+
+Freely define the level of formality, greeting/closing conventions, and signature format. The
+`create_reply` tool always reads this entire file and passes it along for the AI to follow when
+drafting a reply.
+
+#### Changing the config location
+
+By default, the server uses `./config` relative to the directory it was launched from (`cwd`). To
+use a different location, set the `OUTLOOK_MCP_CONFIG_DIR` environment variable.
+
+### Connecting an MCP client
+
+This server runs as a local stdio process. It can only be reached by **an MCP client running on
+the same PC where Outlook is installed** — a remote or cloud session has no way to reach Outlook
+and won't work.
+
+In the examples below, replace the path (`C:/outlook-mcp`) with wherever you actually cloned the
+repository. On Windows, write backslashes (`\`) as forward slashes (`/`) or escape them (`\\`)
+inside JSON or command lines.
+
+#### Connecting Claude Desktop
+
+1. Open the config file: `%APPDATA%\Claude\claude_desktop_config.json`
+   (Paste `%APPDATA%\Claude` into File Explorer's address bar to jump straight to the folder. If
+   the file doesn't exist, create it.)
+2. Add the following under `mcpServers` (if the file is empty, you can paste this whole block in):
+
+   ```json
+   {
+     "mcpServers": {
+       "outlook-mcp": {
+         "command": "node",
+         "args": ["C:/outlook-mcp/dist/server/index.js"],
+         "env": {
+           "OUTLOOK_MCP_CONFIG_DIR": "C:/outlook-mcp/config"
+         }
+       }
+     }
+   }
+   ```
+
+3. Save the file, then **fully quit and restart Claude Desktop** (it needs to be closed from the
+   system tray too for the change to take effect).
+4. Open a new conversation and click the tools icon (🔨). If `outlook-mcp` shows up in the list,
+   the connection is working.
+
+#### Connecting the Claude Code CLI
+
+`claude mcp add` is a command you run in a regular terminal (PowerShell/cmd), not inside a Claude
+Code conversation. Register it once:
+
+```bash
+claude mcp add outlook-mcp --scope local -e OUTLOOK_MCP_CONFIG_DIR="C:/outlook-mcp/config" -- node "C:/outlook-mcp/dist/server/index.js"
+```
+
+Scope options:
+
+- `--scope local` (default, recommended): the tool is only visible in the directory where you ran
+  the command. Run it from inside the `outlook-mcp` folder to scope it to that project only.
+- `--scope user`: visible from any directory, as long as it's the same Windows account on this PC.
+- `--scope project`: the registration is stored inside the project folder itself and applies to
+  anyone else working on that same project. Only use this if you're sharing the setup with a team.
+
+Other options:
+
+- `-e KEY=VALUE`: an environment variable passed to the server process. `OUTLOOK_MCP_CONFIG_DIR`
+  isn't strictly required, but is recommended since Claude Code's working directory can vary.
+- Everything after `--`: the actual command and arguments to run.
+
+You only need to register once. After that, just open a new `claude` session as usual within the
+registered scope, and the tools show up automatically.
+
+Verify the registration:
+
+```bash
+claude mcp list              # check that outlook-mcp is listed
+claude mcp get outlook-mcp   # inspect the registered command/env
+```
+
+Exact flags and behavior may vary by Claude Code version — check `claude mcp add --help` if
+something doesn't match. Once registered, open any new session and ask in natural language (e.g.
+"organize my mail") to have `organize_mail` and the other tools invoked automatically.
+
+#### Confirming the connection works
+
+The safest first call is `list_folders` (it only reads the folder list and moves nothing). Ask
+something like "show me the Outlook folder list via outlook-mcp" — if the real folder structure
+comes back, the connection is working.
+
+### Available tools
+
+| Tool | Description |
+|---|---|
+| `organize_mail` | Scans the inbox or sent folder (`rootFolder`) and automatically moves mail into customer/category folders. Unread mail is never moved, and mail that can't be confidently classified is left in place and reported as a "needs review" list instead of being moved. Supports `scope` (all/unread/today) and `dryRun`. |
+| `read_mail` | Looks up a single mail's body/subject/sender/recipients/CC/date/attachments by `entryId`. |
+| `search_mail` | Searches mail by subject/body/sender/date/customer/keyword (including subfolders). |
+| `create_reply` | Fetches the original mail together with `reply_style.md` so the AI can draft a reply body. |
+| `save_draft` | Saves a composed reply (or new mail) to Outlook's Drafts folder. **Never sends it.** |
+| `list_folders` | Lists the inbox's folder tree with mail/unread counts (debugging helper). |
+| `learn_reply_style` | Gathers mail actually sent by the user, for the AI to analyze and draft `reply_style.md` from (used during initial setup). |
+
+#### Example flow: "Organize my mail"
+
+1. User: "Organize the mail I got today."
+2. The AI calls `organize_mail({ scope: "today" })`, which moves mail into customer/category
+   folders and returns a summary.
+
+#### Example flow: "Draft a reply to CustomerB's mail"
+
+1. The AI calls `search_mail({ customer: "CustomerB" })` to find the relevant mail.
+2. It calls `read_mail` or `create_reply({ entryId })` to see the original mail and the reply
+   style guide.
+3. It writes the reply body (HTML) following `reply_style.md`.
+4. It calls `save_draft({ mode: "reply", sourceEntryId, bodyHtml })` to save it to Drafts.
+5. The user reviews it in Outlook and sends it themselves.
+
+#### Example flow: initial setup, "Learn my writing style and build a reply style guide"
+
+1. The AI calls `learn_reply_style({ maxCount: 40 })`, which pulls mail actually sent by the user.
+2. It analyzes greeting/closing/signature/tone patterns and any recurring reply types.
+3. Based on that analysis, it writes a new `config/reply_style.md`.
+4. From then on, `create_reply` / `save_draft` follow that file to write replies in the user's
+   actual voice.
+
+### Project structure
+
+```
+outlook-mcp/
+├── config/
+│   ├── customers.yml       # customers and aliases
+│   ├── categories.yml      # category rules + default folder
+│   └── reply_style.md      # reply style guide
+├── src/
+│   ├── server/index.ts     # MCP server bootstrap (stdio transport)
+│   ├── tools/               # the 5+1 MCP tool definitions
+│   ├── outlook/
+│   │   ├── client.ts        # OutlookClient (high-level API)
+│   │   ├── powershellBridge.ts  # Node <-> PowerShell process bridge
+│   │   ├── types.ts         # zod schemas (validate COM responses)
+│   │   └── scripts/*.ps1    # the actual Outlook COM calls (PowerShell)
+│   ├── config/               # customers.yml/categories.yml loader + zod schemas
+│   ├── classification/       # subject/body/CC-based classification logic (pure functions)
+│   └── utils/                 # logger, text cleanup utilities
+└── scripts/copy-assets.mjs   # copies the .ps1 scripts into dist/ during build
+```
+
+### Development
+
+```bash
+npm run dev         # run src/server/index.ts directly with tsx (no compile step)
+npm run typecheck   # tsc --noEmit
+npm run build        # build into dist/
+npm start             # run dist/server/index.js
+```
+
+Log verbosity is controlled by the `LOG_LEVEL` environment variable (`debug`/`info`/`warn`/`error`,
+default `info`). All logs are written to **stderr only**, so they never interfere with the MCP
+stdio protocol.
+
+### Troubleshooting
+
+- **Mail isn't moving, with no "folder not found" error**: Check that Outlook is running, and that
+  the running Outlook profile actually contains the target mailbox.
+- **Recipient is empty when saving a draft**: `mode: "new"` requires `to`. `reply`/`replyAll` fill
+  it in automatically from the original mail.
+- **Korean/other text looks garbled**: When logs are printed directly to a PowerShell console, the
+  console's code page setting can make the display look garbled, but the actual stderr/file data
+  is correctly written as UTF-8. MCP clients read the bytes directly through a pipe, so they are
+  not affected.
+- **Want to use a different PowerShell (pwsh.exe)**: set the `OUTLOOK_MCP_POWERSHELL_EXE`
+  environment variable to that executable's path.
+- **A folder name contains "/"**: `folderPath`/`folder` values treat "/" as a subfolder separator,
+  so an actual Outlook folder whose name contains "/" (e.g. `Notices/Alerts`) will confuse the path
+  resolution. Either remove the "/" from that folder's name, or avoid referencing it directly via
+  `folder`/`folderPath`.
+
+### License
 
 [MIT](./LICENSE)
