@@ -266,6 +266,7 @@ claude mcp get outlook-mcp   # 등록된 command/env 상세 확인
 | `create_reply` | 원본 메일과 `reply_style.md`를 함께 조회하여 AI가 답장 본문을 작성할 수 있도록 준비 |
 | `save_draft` | 작성된 답장(또는 새 메일)을 Outlook 임시보관함에 저장. **발송하지 않음** |
 | `list_folders` | 받은 편지함 하위 폴더 트리와 메일/안읽음 수 조회 (디버깅용 보조 도구) |
+| `learn_reply_style` | 보낸 편지함에서 실제 작성한 메일을 모아옵니다. AI가 이를 분석해 `reply_style.md` 초안을 작성하는 데 사용 (초기 설정용) |
 
 ### 사용 흐름 예시: "메일 정리해"
 
@@ -280,6 +281,13 @@ claude mcp get outlook-mcp   # 등록된 command/env 상세 확인
 3. `reply_style.md` 기준으로 답장 본문(HTML)을 작성합니다.
 4. `save_draft({ mode: "reply", sourceEntryId, bodyHtml })`를 호출해 임시보관함에 저장합니다.
 5. 사용자가 Outlook에서 직접 검토한 후 발송합니다.
+
+### 사용 흐름 예시: 초기 설정 시 "내 메일 문체 학습해서 답장 스타일 만들어줘"
+
+1. AI가 `learn_reply_style({ maxCount: 40 })`을 호출해 보낸 편지함에서 실제 작성한 메일을 가져옵니다.
+2. 인사말/맺음말/서명/톤 패턴과 자주 쓰는 답장 유형을 분석합니다.
+3. 분석 결과를 바탕으로 `config/reply_style.md`를 새로 작성합니다.
+4. 이후 `create_reply`/`save_draft` 는 이 파일을 참고해 사용자의 실제 문체로 답장을 작성합니다.
 
 ## 프로젝트 구조
 

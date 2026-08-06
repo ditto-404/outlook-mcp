@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerCreateReplyTool } from './createReply.js';
+import { registerLearnReplyStyleTool } from './learnReplyStyle.js';
 import { registerListFoldersTool } from './listFolders.js';
 import { registerOrganizeMailTool } from './organizeMail.js';
 import { registerReadMailTool } from './readMail.js';
@@ -13,4 +14,5 @@ export function registerAllTools(server: McpServer): void {
   registerCreateReplyTool(server);
   registerSaveDraftTool(server);
   registerListFoldersTool(server);
+  registerLearnReplyStyleTool(server);
 }
