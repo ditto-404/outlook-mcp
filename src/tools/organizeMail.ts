@@ -58,6 +58,7 @@ export function registerOrganizeMailTool(server: McpServer): void {
             senderEmail: mail.senderEmail,
             ccNames: mail.ccNames,
             ccEmails: mail.ccEmails,
+            attachmentNames: mail.attachmentNames,
             itemType: mail.itemType,
           },
           customers,

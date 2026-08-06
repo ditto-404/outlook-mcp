@@ -228,7 +228,11 @@ function ConvertTo-MailSummary {
     try { $unread = [bool]$Item.UnRead } catch {}
 
     $hasAttachments = $false
-    try { $hasAttachments = ($Item.Attachments.Count -gt 0) } catch {}
+    $attachmentNames = @()
+    try {
+        $hasAttachments = ($Item.Attachments.Count -gt 0)
+        $attachmentNames = @($Item.Attachments | ForEach-Object { $_.FileName })
+    } catch {}
 
     $cc = Get-CcInfo $Item
     $itemType = Get-ItemType ([int]$Item.Class)
@@ -242,6 +246,7 @@ function ConvertTo-MailSummary {
         receivedTime   = $receivedTime
         unread         = $unread
         hasAttachments = $hasAttachments
+        attachmentNames = $attachmentNames
         bodyPreview    = $body
         ccNames        = $cc.Names
         ccEmails       = $cc.Emails
