@@ -15,6 +15,7 @@ export const MailSummarySchema = z.object({
   receivedTime: z.string(),
   unread: z.boolean().default(false),
   hasAttachments: z.boolean().default(false),
+  attachmentNames: z.array(z.string()).default([]),
   bodyPreview: z.string().default(''),
   ccNames: z.array(z.string()).default([]),
   ccEmails: z.array(z.string()).default([]),

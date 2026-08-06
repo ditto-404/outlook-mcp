@@ -7,6 +7,7 @@ export interface ClassifiableMail {
   senderEmail: string;
   ccNames: string[];
   ccEmails: string[];
+  attachmentNames?: string[];
   /** 'calendar' 이면 회의 요청/응답, 연차 등 - 내용 판별 없이 항상 calendar_folder 로 이동 */
   itemType?: 'mail' | 'calendar';
 }
@@ -47,7 +48,15 @@ export function classifyMail(
     };
   }
 
-  const contentHaystack = [mail.subject, mail.bodyPreview, mail.senderName, mail.ccNames.join(' '), mail.ccEmails.join(' ')]
+  const attachmentNames = mail.attachmentNames ?? [];
+  const contentHaystack = [
+    mail.subject,
+    mail.bodyPreview,
+    mail.senderName,
+    mail.ccNames.join(' '),
+    mail.ccEmails.join(' '),
+    attachmentNames.join(' '),
+  ]
     .join('\n')
     .toLowerCase();
 
@@ -58,13 +67,13 @@ export function classifyMail(
           folderPath: `${categoriesConfig.customer_root_folder}/${customer.name}`,
           matchedType: 'customer',
           matchedName: customer.name,
-          reason: `별칭 "${alias}" 이(가) 제목/본문/참조에서 발견되었습니다.`,
+          reason: `별칭 "${alias}" 이(가) 제목/본문/참조/첨부파일명에서 발견되었습니다.`,
         };
       }
     }
   }
 
-  const subjectBodyHaystack = `${mail.subject}\n${mail.bodyPreview}`.toLowerCase();
+  const subjectBodyHaystack = `${mail.subject}\n${mail.bodyPreview}\n${attachmentNames.join(' ')}`.toLowerCase();
   const senderDomain = domainOf(mail.senderEmail);
 
   for (const category of categoriesConfig.categories) {
@@ -74,7 +83,7 @@ export function classifyMail(
           folderPath: category.folder,
           matchedType: 'category',
           matchedName: category.name,
-          reason: `키워드 "${keyword}" 이(가) 제목/본문에서 발견되었습니다.`,
+          reason: `키워드 "${keyword}" 이(가) 제목/본문/첨부파일명에서 발견되었습니다.`,
         };
       }
     }

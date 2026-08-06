@@ -59,7 +59,9 @@ function Search-FolderTree {
 
         if ($Filters.keywords.Count -gt 0) {
             $cc = Get-CcInfo $item
-            $haystack = (([string]$item.Subject) + ' ' + $bodyText + ' ' + ([string]$item.SenderName) + ' ' + ($cc.Names -join ' ') + ' ' + ($cc.Emails -join ' ')).ToLower()
+            $attachNames = ''
+            try { $attachNames = (($item.Attachments | ForEach-Object { $_.FileName }) -join ' ') } catch {}
+            $haystack = (([string]$item.Subject) + ' ' + $bodyText + ' ' + ([string]$item.SenderName) + ' ' + ($cc.Names -join ' ') + ' ' + ($cc.Emails -join ' ') + ' ' + $attachNames).ToLower()
             $matched = $false
             foreach ($kw in $Filters.keywords) {
                 if ($haystack.Contains($kw.ToLower())) { $matched = $true; break }
