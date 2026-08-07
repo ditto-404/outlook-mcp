@@ -99,7 +99,7 @@ npm run build
 `dist/outlook/scripts/`로 복사합니다. 다음과 비슷한 줄이 마지막에 출력되면 성공입니다:
 
 ```
-PowerShell 스크립트 복사 완료: ...\src\outlook\scripts -> ...\dist\outlook\scripts (8개 파일)
+PowerShell 스크립트 복사 완료: ...\src\outlook\scripts -> ...\dist\outlook\scripts (9개 파일)
 ```
 
 ### 5. 빌드 확인 (선택)
@@ -274,9 +274,17 @@ claude mcp get outlook-mcp   # 등록된 command/env 상세 확인
 | `read_mail` | `entryId`로 메일 한 건의 본문/제목/발신자/수신자/참조/날짜/첨부파일을 조회 |
 | `search_mail` | 제목/본문/발신자/날짜/고객사/키워드로 메일 검색 (하위 폴더 포함) |
 | `create_reply` | 원본 메일과 `reply_style.md`를 함께 조회하여 AI가 답장 본문을 작성할 수 있도록 준비 |
-| `save_draft` | 작성된 답장(또는 새 메일)을 Outlook 임시보관함에 저장. **발송하지 않음** |
+| `save_draft` | 작성된 답장(또는 새 메일)을 Outlook 임시보관함에 저장. `mode: "update"`로 기존 초안을 그 자리에서 덮어쓸 수도 있음. **발송하지 않음** |
+| `list_drafts` | 임시보관함(Drafts)에 저장된 미완성 초안 목록 조회 (제목/키워드 필터, 최근 수정순). "쓰던 메일 이어서 완성해줘" 같은 요청에 사용 |
 | `list_folders` | 받은 편지함 하위 폴더 트리와 메일/안읽음 수 조회 (디버깅용 보조 도구) |
 | `learn_reply_style` | 보낸 편지함에서 실제 작성한 메일을 모아옵니다. AI가 이를 분석해 `reply_style.md` 초안을 작성하는 데 사용 (초기 설정용) |
+
+### 사용 흐름 예시: 초기 설정 시 "내 메일 문체 학습해서 답장 스타일 만들어줘"
+
+1. AI가 `learn_reply_style({ maxCount: 40 })`을 호출해 보낸 편지함에서 실제 작성한 메일을 가져옵니다.
+2. 인사말/맺음말/서명/톤 패턴과 자주 쓰는 답장 유형을 분석합니다.
+3. 분석 결과를 바탕으로 `config/reply_style.md`를 새로 작성합니다.
+4. 이후 `create_reply`/`save_draft` 는 이 파일을 참고해 사용자의 실제 문체로 답장을 작성합니다.
 
 ### 사용 흐름 예시: "메일 정리해"
 
@@ -292,12 +300,14 @@ claude mcp get outlook-mcp   # 등록된 command/env 상세 확인
 4. `save_draft({ mode: "reply", sourceEntryId, bodyHtml })`를 호출해 임시보관함에 저장합니다.
 5. 사용자가 Outlook에서 직접 검토한 후 발송합니다.
 
-### 사용 흐름 예시: 초기 설정 시 "내 메일 문체 학습해서 답장 스타일 만들어줘"
+### 사용 흐름 예시: "임시보관함에 쓰던 메일 이어서 완성해줘"
 
-1. AI가 `learn_reply_style({ maxCount: 40 })`을 호출해 보낸 편지함에서 실제 작성한 메일을 가져옵니다.
-2. 인사말/맺음말/서명/톤 패턴과 자주 쓰는 답장 유형을 분석합니다.
-3. 분석 결과를 바탕으로 `config/reply_style.md`를 새로 작성합니다.
-4. 이후 `create_reply`/`save_draft` 는 이 파일을 참고해 사용자의 실제 문체로 답장을 작성합니다.
+1. AI가 `list_drafts()`를 호출해 임시보관함의 미완성 초안 목록(제목/받는사람/entryId)을 확인합니다.
+2. 여러 건이면 사용자에게 어떤 초안인지 확인하거나 제목/키워드로 좁혀서 특정합니다.
+3. `read_mail({ entryId })`로 지금까지 쓴 본문을 읽습니다.
+4. 나머지 내용을 이어서 작성한 뒤, `save_draft({ mode: "update", draftEntryId, bodyHtml })`를
+   호출해 새 초안을 만들지 않고 같은 초안에 덮어씁니다.
+5. 사용자가 Outlook 임시보관함에서 검토한 후 직접 발송합니다.
 
 ## 프로젝트 구조
 
@@ -309,7 +319,8 @@ outlook-mcp/
 │   └── reply_style.md      # 답장 문체 가이드
 ├── src/
 │   ├── server/index.ts     # MCP 서버 부트스트랩 (stdio transport)
-│   ├── tools/               # MCP tool 5+1종 정의
+│   ├── tools/               # MCP tool 8종 정의 (organize_mail, read_mail, search_mail,
+│   │                         #   create_reply, save_draft, list_drafts, list_folders, learn_reply_style)
 │   ├── outlook/
 │   │   ├── client.ts        # OutlookClient (상위 레벨 API)
 │   │   ├── powershellBridge.ts  # Node <-> PowerShell 프로세스 브리지
@@ -458,7 +469,7 @@ npm run build
 `dist/outlook/scripts/`. A successful build ends with a line similar to:
 
 ```
-PowerShell script copy complete: ...\src\outlook\scripts -> ...\dist\outlook\scripts (8 files)
+PowerShell script copy complete: ...\src\outlook\scripts -> ...\dist\outlook\scripts (9 files)
 ```
 
 #### 5. Verify the build (optional)
@@ -641,9 +652,18 @@ comes back, the connection is working.
 | `read_mail` | Looks up a single mail's body/subject/sender/recipients/CC/date/attachments by `entryId`. |
 | `search_mail` | Searches mail by subject/body/sender/date/customer/keyword (including subfolders). |
 | `create_reply` | Fetches the original mail together with `reply_style.md` so the AI can draft a reply body. |
-| `save_draft` | Saves a composed reply (or new mail) to Outlook's Drafts folder. **Never sends it.** |
+| `save_draft` | Saves a composed reply (or new mail) to Outlook's Drafts folder. `mode: "update"` overwrites an existing draft in place instead of creating a new one. **Never sends it.** |
+| `list_drafts` | Lists unfinished drafts saved in the Drafts folder (subject/keyword filter, most recently modified first). Use this for requests like "finish the mail I was drafting." |
 | `list_folders` | Lists the inbox's folder tree with mail/unread counts (debugging helper). |
 | `learn_reply_style` | Gathers mail actually sent by the user, for the AI to analyze and draft `reply_style.md` from (used during initial setup). |
+
+#### Example flow: initial setup, "Learn my writing style and build a reply style guide"
+
+1. The AI calls `learn_reply_style({ maxCount: 40 })`, which pulls mail actually sent by the user.
+2. It analyzes greeting/closing/signature/tone patterns and any recurring reply types.
+3. Based on that analysis, it writes a new `config/reply_style.md`.
+4. From then on, `create_reply` / `save_draft` follow that file to write replies in the user's
+   actual voice.
 
 #### Example flow: "Organize my mail"
 
@@ -660,13 +680,14 @@ comes back, the connection is working.
 4. It calls `save_draft({ mode: "reply", sourceEntryId, bodyHtml })` to save it to Drafts.
 5. The user reviews it in Outlook and sends it themselves.
 
-#### Example flow: initial setup, "Learn my writing style and build a reply style guide"
+#### Example flow: "Finish the mail I was drafting in the Drafts folder"
 
-1. The AI calls `learn_reply_style({ maxCount: 40 })`, which pulls mail actually sent by the user.
-2. It analyzes greeting/closing/signature/tone patterns and any recurring reply types.
-3. Based on that analysis, it writes a new `config/reply_style.md`.
-4. From then on, `create_reply` / `save_draft` follow that file to write replies in the user's
-   actual voice.
+1. The AI calls `list_drafts()` to see the unfinished drafts (subject/recipient/entryId).
+2. If there are several, it asks the user which one, or narrows it down by subject/keyword.
+3. It calls `read_mail({ entryId })` to read what's been written so far.
+4. It writes the rest of the body, then calls `save_draft({ mode: "update", draftEntryId, bodyHtml })`
+   to overwrite that same draft instead of creating a new one.
+5. The user reviews it in the Drafts folder and sends it themselves.
 
 ### Project structure
 
@@ -678,7 +699,8 @@ outlook-mcp/
 │   └── reply_style.md      # reply style guide
 ├── src/
 │   ├── server/index.ts     # MCP server bootstrap (stdio transport)
-│   ├── tools/               # the 5+1 MCP tool definitions
+│   ├── tools/               # 8 MCP tool definitions (organize_mail, read_mail, search_mail,
+│   │                         #   create_reply, save_draft, list_drafts, list_folders, learn_reply_style)
 │   ├── outlook/
 │   │   ├── client.ts        # OutlookClient (high-level API)
 │   │   ├── powershellBridge.ts  # Node <-> PowerShell process bridge
