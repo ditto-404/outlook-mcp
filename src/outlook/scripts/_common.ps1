@@ -254,3 +254,46 @@ function ConvertTo-MailSummary {
         itemType       = if ($itemType) { $itemType } else { 'mail' }
     }
 }
+
+# 임시보관함(Drafts) 항목은 ReceivedTime 이 의미가 없으므로(발송/수신된 적이 없음)
+# 별도의 요약 변환 함수를 사용한다 (LastModificationTime 기준).
+function ConvertTo-DraftSummary {
+    param($Item)
+
+    $body = ''
+    try { $body = [string]$Item.Body } catch {}
+    if ($body.Length -gt 300) { $body = $body.Substring(0, 300) }
+
+    $storeId = ''
+    try { $storeId = $Item.Parent.StoreID } catch {}
+
+    $subject = ''
+    try { $subject = [string]$Item.Subject } catch {}
+
+    $to = ''
+    try { $to = [string]$Item.To } catch {}
+
+    $cc = ''
+    try { $cc = [string]$Item.CC } catch {}
+
+    $lastModifiedTime = ''
+    try { $lastModifiedTime = $Item.LastModificationTime.ToString('o') } catch {}
+
+    $createdTime = ''
+    try { $createdTime = $Item.CreationTime.ToString('o') } catch {}
+
+    $hasAttachments = $false
+    try { $hasAttachments = ($Item.Attachments.Count -gt 0) } catch {}
+
+    return [ordered]@{
+        entryId          = $Item.EntryID
+        storeId          = $storeId
+        subject          = $subject
+        to               = $to
+        cc               = $cc
+        lastModifiedTime = $lastModifiedTime
+        createdTime      = $createdTime
+        hasAttachments   = $hasAttachments
+        bodyPreview      = $body
+    }
+}
