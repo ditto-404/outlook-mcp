@@ -78,6 +78,25 @@ export const DraftResultSchema = z.object({
 });
 export type DraftResult = z.infer<typeof DraftResultSchema>;
 
+export const DraftSummarySchema = z.object({
+  entryId: z.string(),
+  storeId: z.string().default(''),
+  subject: z.string().default(''),
+  to: z.string().default(''),
+  cc: z.string().default(''),
+  lastModifiedTime: z.string().default(''),
+  createdTime: z.string().default(''),
+  hasAttachments: z.boolean().default(false),
+  bodyPreview: z.string().default(''),
+});
+export type DraftSummary = z.infer<typeof DraftSummarySchema>;
+
+export const DraftListResultSchema = z.object({
+  items: z.array(DraftSummarySchema),
+  totalCount: z.number().default(0),
+});
+export type DraftListResult = z.infer<typeof DraftListResultSchema>;
+
 export interface FolderNode {
   name: string;
   path: string;

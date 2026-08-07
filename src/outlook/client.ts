@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { runOutlookScript } from './powershellBridge.js';
 import {
+  DraftListResultSchema,
   DraftResultSchema,
   FolderNodeSchema,
   MailDetailSchema,
@@ -8,6 +9,7 @@ import {
   MoveBatchResultSchema,
   MoveResultSchema,
   SearchResultSchema,
+  type DraftListResult,
   type DraftResult,
   type FolderNode,
   type MailDetail,
@@ -18,7 +20,7 @@ import {
 } from './types.js';
 
 export type OrganizeScope = 'all' | 'unread' | 'today';
-export type DraftMode = 'reply' | 'replyAll' | 'new';
+export type DraftMode = 'reply' | 'replyAll' | 'new' | 'update';
 export type RootFolder = 'inbox' | 'sent';
 
 // 발신자 주소를 Exchange 디렉터리에서 조회하는 COM 호출(GetExchangeUser)이 건마다
@@ -51,10 +53,18 @@ export interface SaveDraftParams {
   mode: DraftMode;
   sourceEntryId?: string;
   sourceStoreId?: string;
+  draftEntryId?: string;
+  draftStoreId?: string;
   to?: string[];
   cc?: string[];
   subject?: string;
   bodyHtml: string;
+}
+
+export interface ListDraftsParams {
+  subject?: string;
+  keyword?: string;
+  maxCount?: number;
 }
 
 /** Classic Outlook COM 과의 상호작용을 감싸는 상위 레벨 클라이언트. */
@@ -101,6 +111,11 @@ export class OutlookClient {
   async saveDraft(params: SaveDraftParams): Promise<DraftResult> {
     const data = await runOutlookScript('save-draft.ps1', { ...params });
     return DraftResultSchema.parse(data);
+  }
+
+  async listDrafts(params: ListDraftsParams = {}): Promise<DraftListResult> {
+    const data = await runOutlookScript('list-drafts.ps1', { ...params });
+    return DraftListResultSchema.parse(data);
   }
 
   async listFolders(): Promise<FolderNode> {

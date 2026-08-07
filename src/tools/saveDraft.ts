@@ -11,11 +11,15 @@ export function registerSaveDraftTool(server: McpServer): void {
         '작성한 답장 또는 새 메일을 Outlook 임시보관함(Drafts)에 저장합니다. 메일을 발송하지는 않습니다. ' +
         'mode="reply"/"replyAll" 인 경우 sourceEntryId 로 지정한 원본 메일에 대한 답장 스레드로 저장되며 ' +
         '(수신자/제목/원본 인용문이 Outlook 에 의해 자동으로 채워집니다), mode="new" 인 경우 새 메일로 저장됩니다. ' +
+        'mode="update" 인 경우 list_drafts 로 조회한 기존 초안(draftEntryId)을 새로 만들지 않고 그대로 ' +
+        '덮어씁니다 — 사용자가 "쓰던 메일 이어서 완성해줘" 라고 할 때 사용하세요(본문 전체 교체, 원본 인용문 유지 안 됨). ' +
         '저장된 초안은 사용자가 Outlook(Classic 또는 New)에서 검토 후 직접 발송해야 합니다.',
       inputSchema: {
-        mode: z.enum(['reply', 'replyAll', 'new']).describe('저장할 초안의 종류'),
+        mode: z.enum(['reply', 'replyAll', 'new', 'update']).describe('저장할 초안의 종류'),
         sourceEntryId: z.string().optional().describe('mode 가 reply/replyAll 일 때 원본 메일의 EntryID (필수)'),
         sourceStoreId: z.string().optional().describe('원본 메일이 속한 저장소 ID (생략 가능)'),
+        draftEntryId: z.string().optional().describe('mode 가 update 일 때 덮어쓸 기존 초안의 EntryID (필수, list_drafts 결과 참고)'),
+        draftStoreId: z.string().optional().describe('기존 초안이 속한 저장소 ID (생략 가능)'),
         to: z
           .array(z.string())
           .optional()
@@ -25,15 +29,28 @@ export function registerSaveDraftTool(server: McpServer): void {
         bodyHtml: z.string().min(1).describe('저장할 본문 (HTML). 줄바꿈은 <br> 또는 <p> 태그를 사용하세요.'),
       },
     },
-    async ({ mode, sourceEntryId, sourceStoreId, to, cc, subject, bodyHtml }) => {
+    async ({ mode, sourceEntryId, sourceStoreId, draftEntryId, draftStoreId, to, cc, subject, bodyHtml }) => {
       if ((mode === 'reply' || mode === 'replyAll') && !sourceEntryId) {
         throw new Error('mode 가 reply 또는 replyAll 일 때는 sourceEntryId 가 필요합니다.');
       }
       if (mode === 'new' && (!to || to.length === 0)) {
         throw new Error('mode 가 new 일 때는 to 수신자가 최소 1명 필요합니다.');
       }
+      if (mode === 'update' && !draftEntryId) {
+        throw new Error('mode 가 update 일 때는 draftEntryId 가 필요합니다.');
+      }
 
-      const result = await outlookClient.saveDraft({ mode, sourceEntryId, sourceStoreId, to, cc, subject, bodyHtml });
+      const result = await outlookClient.saveDraft({
+        mode,
+        sourceEntryId,
+        sourceStoreId,
+        draftEntryId,
+        draftStoreId,
+        to,
+        cc,
+        subject,
+        bodyHtml,
+      });
 
       const text = [
         '임시보관함(Drafts)에 초안을 저장했습니다.',
