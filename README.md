@@ -6,6 +6,7 @@
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)](#요구사항)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-8A2BE2)](https://modelcontextprotocol.io)
 [![GitHub Repo stars](https://img.shields.io/github/stars/hayein-bit/outlook-mcp?style=social)](https://github.com/hayein-bit/outlook-mcp)
+[![한국어](https://img.shields.io/badge/lang-한국어-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#outlook-mcp)
 [![English](https://img.shields.io/badge/lang-English-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#english)
 
 Windows **Classic Outlook**(데스크톱 앱)과 연동되는 [MCP](https://modelcontextprotocol.io)(Model Context Protocol) 서버입니다.
@@ -370,15 +371,16 @@ npm start             # dist/server/index.js 실행
 ## English
 
 [![한국어](https://img.shields.io/badge/lang-한국어-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#outlook-mcp)
+[![English](https://img.shields.io/badge/lang-English-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#english)
 
 An [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server that integrates with
 Windows **Classic Outlook** (the desktop app). It uses **Outlook COM** (Object Model) directly
 instead of the Microsoft Graph API, so it works without registering an Azure AD app or any cloud
-authentication — it automates whatever Outlook is already installed locally.
+authentication. It automates whatever Outlook is already installed locally.
 
 The goal is to automatically sort the inbox by customer/category, search and read mail, and
 prepare reply drafts in the user's own writing style inside Outlook's Drafts folder. **Mail is
-always reviewed and sent by the user directly** — this server never sends mail on its own.
+always reviewed and sent by the user directly.** This server never sends mail on its own.
 
 > To avoid being tied to any specific company, the customer list, categories, and reply style are
 > all defined by files under `config/`. Editing those files is enough to reuse this project in a
@@ -481,7 +483,7 @@ npm start
 ```
 
 A `outlook-mcp server started (stdio).` log line means it's working (`Ctrl+C` to stop). This
-command alone doesn't invoke any tools — to actually use the server, connect it to an MCP client
+command alone doesn't invoke any tools. To actually use the server, connect it to an MCP client
 as described below.
 
 ### Configuration (config/)
@@ -513,7 +515,7 @@ customers:
       - Customer B Inc.
 ```
 
-> Customer detection is based on whether an alias appears in the subject, body, or CC — **not**
+> Customer detection is based on whether an alias appears in the subject, body, or CC, **not**
 > on the sender's email domain. Even if an internal colleague sends the mail on the customer's
 > behalf, it still moves to that customer's folder as long as "CustomerB" appears in the body.
 
@@ -551,7 +553,7 @@ Inbox
 ```
 
 Folders that don't exist yet are created automatically when `organize_mail` runs. The numeric
-prefixes in the example are just that — an example. Drop them from the `folder` /
+prefixes in the example are just that: an example. Drop them from the `folder` /
 `customer_root_folder` / `calendar_folder` / `default_folder` values if you don't want them.
 
 #### reply_style.md
@@ -568,7 +570,7 @@ use a different location, set the `OUTLOOK_MCP_CONFIG_DIR` environment variable.
 ### Connecting an MCP client
 
 This server runs as a local stdio process. It can only be reached by **an MCP client running on
-the same PC where Outlook is installed** — a remote or cloud session has no way to reach Outlook
+the same PC where Outlook is installed.** A remote or cloud session has no way to reach Outlook
 and won't work.
 
 In the examples below, replace the path (`C:/outlook-mcp`) with wherever you actually cloned the
@@ -634,14 +636,14 @@ claude mcp list              # check that outlook-mcp is listed
 claude mcp get outlook-mcp   # inspect the registered command/env
 ```
 
-Exact flags and behavior may vary by Claude Code version — check `claude mcp add --help` if
+Exact flags and behavior may vary by Claude Code version. Check `claude mcp add --help` if
 something doesn't match. Once registered, open any new session and ask in natural language (e.g.
 "organize my mail") to have `organize_mail` and the other tools invoked automatically.
 
 #### Confirming the connection works
 
 The safest first call is `list_folders` (it only reads the folder list and moves nothing). Ask
-something like "show me the Outlook folder list via outlook-mcp" — if the real folder structure
+something like "show me the Outlook folder list via outlook-mcp". If the real folder structure
 comes back, the connection is working.
 
 ### Available tools
@@ -745,3 +747,5 @@ stdio protocol.
 ### License
 
 [MIT](./LICENSE)
+
+
