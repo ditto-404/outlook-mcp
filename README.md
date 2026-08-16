@@ -25,23 +25,49 @@ Outlook 임시보관함(Drafts)에 준비해 두는 것을 목표로 합니다. 
 Node.js는 Windows COM 객체를 직접 다룰 수 없으므로, 이 프로젝트는 Outlook과의 모든 상호작용을
 **PowerShell 자식 프로세스**에 위임합니다.
 
-```
-MCP Client (Claude 등)
-      │  stdio (JSON-RPC)
-      ▼
-outlook-mcp (Node.js / TypeScript)
-      │  임시 JSON 파일로 요청/응답 교환
-      ▼
-PowerShell (powershell.exe)
-      │  Outlook.Application COM 객체
-      ▼
-Classic Outlook (실행 중인 인스턴스에 접속)
+```mermaid
+flowchart TB
+    accTitle: Outlook MCP 요청 처리 상세 흐름
+    accDescr: MCP 클라이언트 요청이 임시 JSON 파일을 통해 outlook-mcp 서버에서 PowerShell 자식 프로세스로 전달되고, Outlook 실행 여부에 따라 기존 인스턴스에 접속하거나 새로 실행한 뒤 COM 호출 결과가 같은 경로로 되돌아오는 과정을 보여준다.
+
+    subgraph client_layer ["MCP 클라이언트"]
+        client["MCP Client<br/>(Claude 등)"]:::input_style
+    end
+
+    subgraph server_layer ["outlook-mcp 서버 (Node.js/TypeScript)"]
+        write_request[("임시 요청 JSON<br/>호출별 임시 폴더 생성")]:::process_style
+        spawn_ps["PowerShell 자식 프로세스 실행"]:::process_style
+        read_response[("임시 응답 JSON")]:::process_style
+        cleanup["임시 폴더 정리"]:::aux_style
+    end
+
+    subgraph ps_layer ["PowerShell → Outlook COM"]
+        check_running{"Outlook<br/>실행 중?"}
+        attach_instance["기존 인스턴스에 접속<br/>(새 창·프로필 프롬프트 없음)"]:::process_style
+        launch_instance["새 인스턴스 실행"]:::process_style
+        outlook["Classic Outlook<br/>실행 중인 인스턴스"]:::output_style
+        com_call["Outlook.Application<br/>COM 호출"]:::process_style
+    end
+
+    client -->|"stdio 요청(JSON-RPC)"| write_request
+    write_request --> spawn_ps
+    spawn_ps --> check_running
+    check_running -->|예| attach_instance
+    check_running -->|아니오| launch_instance
+    attach_instance --> outlook
+    launch_instance --> outlook
+    outlook --> com_call
+    com_call --> read_response
+    read_response -->|"stdio 응답(JSON-RPC)"| client
+    read_response -.->|"호출 종료 시"| cleanup
+
+    classDef input_style fill:#e9eeec,stroke:#4c5b60,stroke-width:2px,color:#2c3a3d
+    classDef process_style fill:#232522,stroke:#111111,stroke-width:2px,color:#f5f3ec
+    classDef output_style fill:#f6efde,stroke:#8a6f45,stroke-width:2px,color:#4a3b22
+    classDef aux_style fill:none,stroke:#a85e1a,stroke-width:2px,stroke-dasharray:4 3,color:#7a4712
 ```
 
-- 이미 실행 중인 Outlook이 있으면 해당 인스턴스에 그대로 접속합니다(새 창·프로필 선택 프롬프트 없음).
-- 실행 중이 아니면 새로 실행합니다.
-- 요청 파라미터와 결과는 로케일·인코딩 문제를 피하기 위해 stdout이 아닌 **임시 JSON 파일**로
-  주고받습니다. 호출마다 임시 폴더를 생성하며, 종료 시 정리합니다.
+요청 파라미터와 결과를 stdout이 아니라 임시 JSON 파일로 주고받는 이유는 로케일·인코딩 문제를 피하기 위해서입니다.
 
 ## 요구사항
 
@@ -391,25 +417,49 @@ always reviewed and sent by the user directly.** This server never sends mail on
 Node.js cannot work with Windows COM objects directly, so this project delegates every
 interaction with Outlook to a **PowerShell child process**.
 
-```
-MCP Client (e.g. Claude)
-      │  stdio (JSON-RPC)
-      ▼
-outlook-mcp (Node.js / TypeScript)
-      │  request/response exchanged via temporary JSON files
-      ▼
-PowerShell (powershell.exe)
-      │  Outlook.Application COM object
-      ▼
-Classic Outlook (attaches to the running instance)
+```mermaid
+flowchart TB
+    accTitle: Outlook MCP Request Handling In Detail
+    accDescr: Shows an MCP client request passing through temp JSON files from the outlook-mcp server to a PowerShell child process, which either attaches to a running Outlook instance or launches a new one, calls the COM API, and returns the result along the same path.
+
+    subgraph client_layer ["MCP Client"]
+        client["MCP Client<br/>(e.g. Claude)"]:::input_style
+    end
+
+    subgraph server_layer ["outlook-mcp server (Node.js/TypeScript)"]
+        write_request[("Temp request JSON<br/>new temp folder per call")]:::process_style
+        spawn_ps["Spawn PowerShell<br/>child process"]:::process_style
+        read_response[("Temp response JSON")]:::process_style
+        cleanup["Clean up temp folder"]:::aux_style
+    end
+
+    subgraph ps_layer ["PowerShell → Outlook COM"]
+        check_running{"Outlook<br/>already running?"}
+        attach_instance["Attach to running instance<br/>(no new window/profile prompt)"]:::process_style
+        launch_instance["Launch new instance"]:::process_style
+        outlook["Classic Outlook<br/>running instance"]:::output_style
+        com_call["Outlook.Application<br/>COM call"]:::process_style
+    end
+
+    client -->|"stdio request (JSON-RPC)"| write_request
+    write_request --> spawn_ps
+    spawn_ps --> check_running
+    check_running -->|yes| attach_instance
+    check_running -->|no| launch_instance
+    attach_instance --> outlook
+    launch_instance --> outlook
+    outlook --> com_call
+    com_call --> read_response
+    read_response -->|"stdio response (JSON-RPC)"| client
+    read_response -.->|"on call end"| cleanup
+
+    classDef input_style fill:#e9eeec,stroke:#4c5b60,stroke-width:2px,color:#2c3a3d
+    classDef process_style fill:#232522,stroke:#111111,stroke-width:2px,color:#f5f3ec
+    classDef output_style fill:#f6efde,stroke:#8a6f45,stroke-width:2px,color:#4a3b22
+    classDef aux_style fill:none,stroke:#a85e1a,stroke-width:2px,stroke-dasharray:4 3,color:#7a4712
 ```
 
-- If Outlook is already running, the server attaches to that instance (no new window or profile
-  prompt).
-- If it isn't running, the server starts it.
-- Request parameters and results are exchanged through **temporary JSON files** rather than
-  stdout, to avoid locale/encoding issues. A temporary folder is created per call and cleaned up
-  when the call finishes.
+Request parameters and results are exchanged through **temporary JSON files** rather than stdout, to avoid locale/encoding issues.
 
 ### Requirements
 
