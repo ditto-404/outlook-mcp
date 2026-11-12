@@ -13,7 +13,10 @@ export function registerSaveDraftTool(server: McpServer): void {
         '(수신자/제목/원본 인용문이 Outlook 에 의해 자동으로 채워집니다), mode="new" 인 경우 새 메일로 저장됩니다. ' +
         'mode="update" 인 경우 list_drafts 로 조회한 기존 초안(draftEntryId)을 새로 만들지 않고 그대로 ' +
         '덮어씁니다 — 사용자가 "쓰던 메일 이어서 완성해줘" 라고 할 때 사용하세요(본문 전체 교체, 원본 인용문 유지 안 됨). ' +
-        '저장된 초안은 사용자가 Outlook(Classic 또는 New)에서 검토 후 직접 발송해야 합니다.',
+        '저장된 초안은 사용자가 Outlook(Classic 또는 New)에서 검토 후 직접 발송해야 합니다. ' +
+        '본문에는 사용자가 보낸 최근 메일의 글꼴/색상이 자동으로 적용되고 서명도 자동으로 덧붙여지므로, ' +
+        'bodyHtml 에는 서명(이름/직함/회사 주소 블록)이나 font-family/font-size 스타일을 넣지 말고 ' +
+        '"감사합니다. / OOO 드림" 같은 맺음말까지만 작성하세요.',
       inputSchema: {
         mode: z.enum(['reply', 'replyAll', 'new', 'update']).describe('저장할 초안의 종류'),
         sourceEntryId: z.string().optional().describe('mode 가 reply/replyAll 일 때 원본 메일의 EntryID (필수)'),
@@ -26,10 +29,17 @@ export function registerSaveDraftTool(server: McpServer): void {
           .describe('받는 사람 이메일 목록. reply/replyAll 에서 생략하면 원본 발신자(및 참조인)를 그대로 사용합니다. new 모드에서는 필수.'),
         cc: z.array(z.string()).optional().describe('참조 이메일 목록'),
         subject: z.string().optional().describe('제목. 생략하면 reply/replyAll 은 원본 제목에 RE: 를 붙여 자동 생성합니다.'),
-        bodyHtml: z.string().min(1).describe('저장할 본문 (HTML). 줄바꿈은 <br> 또는 <p> 태그를 사용하세요.'),
+        bodyHtml: z
+          .string()
+          .min(1)
+          .describe('저장할 본문 (HTML). 한 줄마다 <br> 로 줄바꿈하고, 빈 줄은 <br><br> 로 표현하세요. 서명은 넣지 마세요(자동 추가).'),
+        includeSignature: z
+          .boolean()
+          .optional()
+          .describe('보낸편지함 최근 메일에서 추출한 서명을 본문 끝에 덧붙일지 여부 (기본 true)'),
       },
     },
-    async ({ mode, sourceEntryId, sourceStoreId, draftEntryId, draftStoreId, to, cc, subject, bodyHtml }) => {
+    async ({ mode, sourceEntryId, sourceStoreId, draftEntryId, draftStoreId, to, cc, subject, bodyHtml, includeSignature }) => {
       if ((mode === 'reply' || mode === 'replyAll') && !sourceEntryId) {
         throw new Error('mode 가 reply 또는 replyAll 일 때는 sourceEntryId 가 필요합니다.');
       }
@@ -50,6 +60,7 @@ export function registerSaveDraftTool(server: McpServer): void {
         cc,
         subject,
         bodyHtml,
+        includeSignature,
       });
 
       const text = [

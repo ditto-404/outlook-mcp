@@ -59,6 +59,7 @@ export interface SaveDraftParams {
   cc?: string[];
   subject?: string;
   bodyHtml: string;
+  includeSignature?: boolean;
 }
 
 export interface ListDraftsParams {
